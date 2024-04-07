@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>PDF File Upload</title>
+  </head>
+  <body>
+    <h1>PDF File Upload</h1>
+
+    <form method="post" enctype="multipart/form-data">
+      <input type="file" name="pdfFile" id="pdf-input" accept=".pdf" />
+      <input type="submit" value="Upload" />
+    </form>
+
+    <div id="slideshow"></div>
+  </body>
+</html>
+
+<script>
+  async function GetImageURLs(pdfFile) {
+    const formData = new FormData();
+    formData.append('file', pdfFile);
+
+    try {
+      const response = await fetch('http://localhost:8000/generate', {
+        method: 'POST',
+        body: formData,
+        mode: 'cors',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to convert PDF to image');
+      }
+
+      const responseData = await response.json();
+      return responseData.image_url;
+    } catch (error) {
+      console.error('Error:', error);
+      return null;
+    }
+  }
+
+  function createSlideshow(imageUrls) {
+    const slideshowContainer = document.getElementById('slideshow');
+    let currentIndex = 0;
+
+    imageUrls.forEach((url) => {
+      const img = document.createElement('img');
+      img.src = url;
+      slideshowContainer.appendChild(img);
+    });
+
+    const images = slideshowContainer.querySelectorAll('img');
+
+    function showImage(index) {
+      for (let i = 0; i < images.length; i++) {
+        images[i].style.display = 'none';
+      }
+      images[index].style.display = 'block';
+    }
+
+    showImage(currentIndex);
+
+    setInterval(() => {
+      currentIndex = (currentIndex + 1) % images.length;
+      showImage(currentIndex);
+    }, 3000);
+  }
+
+  const pdfInput = document.getElementById('pdf-input');
+  pdfInput.addEventListener('change', async (event) => {
+    const pdfFile = event.target.files[0];
+    const imageUrls = await GetImageURLs(pdfFile);
+    console.log('Generated image URL:', imageUrls);
+    createSlideshow(imageUrls);
+  });
+</script>
