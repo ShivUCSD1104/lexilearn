@@ -6,7 +6,7 @@ from flask_cors import CORS, cross_origin
 app = Flask(__name__)
 CORS(app, resources={r"/generate": {"origins": "*"}})
 client = OpenAI(
-   api_key='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'
+   api_key=''
 )
 
 @app.route('/')
